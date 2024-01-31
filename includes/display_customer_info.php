@@ -32,19 +32,44 @@ function display_customer_information_callback() {
             $customer_email    = $order->get_billing_email();
             $customer_phone    = $order->get_billing_phone();
 
-            // Display customer and order information
-            // echo 'Customer Name: ' . $customer_data->display_name . '<br>';
-            echo 'Customer Email: ' . $customer_email . '<br>';
+            // Get shipping information
+            $shipping_first_name = $customer_data->shipping_first_name;
+            $shipping_last_name  = $customer_data->shipping_last_name;
+            $shipping_company    = $customer_data->shipping_company;
+            $shipping_address_1  = $customer_data->shipping_address_1;
+            $shipping_address_2  = $customer_data->shipping_address_2;
+            $shipping_phone      = $customer_data->shipping_phone;
+            $shipping_city       = $order->get_shipping_city();
+            $shipping_state      = $order->get_shipping_state();
+            $shipping_postcode   = $order->get_shipping_postcode();
+            $shipping_country    = $order->get_shipping_country();
+
+            // Display customer Billing information
             echo 'First Name: ' . $first_name . '<br>';
             echo 'Last Name: ' . $last_name . '<br>';
             echo 'Customer Phone: ' . $customer_phone . '<br>';
+            echo 'Billing Company: ' . $billing_company . '<br>';
             echo 'Billing City: ' . $billing_city . '<br>';
             echo 'Shipping State: ' . $billing_state . '<br>';
             echo 'Shipping Postcode: ' . $billing_postcode . '<br>';
             echo 'Shipping Country: ' . $billing_country . '<br>';
-            echo 'Order Amount: ' . wc_price( $order_total ) . '<br>';
             echo 'Billing Address 1 : ' . $billing_address_1 . '<br>';
             echo 'Billing Address 2 : ' . $billing_address_2 . '<br>';
+
+            echo '<br>';
+            echo '<br>';
+
+            // Display customer Shipping information
+            echo 'Shipping First Name: ' . $shipping_first_name . '<br>';
+            echo 'Shipping Last Name: ' . $shipping_last_name . '<br>';
+            echo 'Shipping Phone: ' . $shipping_phone . '<br>';
+            echo 'Shipping Company: ' . $shipping_company . '<br>';
+            echo 'Shipping City: ' . $shipping_city . '<br>';
+            echo 'Shipping State: ' . $shipping_state . '<br>';
+            echo 'Shipping Postcode: ' . $shipping_postcode . '<br>';
+            echo 'Shipping Country: ' . $shipping_country . '<br>';
+            echo 'Shipping Address 1 : ' . $shipping_address_1 . '<br>';
+            echo 'Shipping Address 2 : ' . $shipping_address_2 . '<br>';
 
         } else {
             echo 'Order not found.';
