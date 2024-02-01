@@ -10,6 +10,10 @@ function display_customer_information_callback() {
         // Get the order object
         $order = wc_get_order( $order_id );
 
+        /* echo '<pre>';
+        print_r( $order );
+        die(); */
+
         // Check if the order exists
         if ( $order ) {
 
@@ -21,6 +25,15 @@ function display_customer_information_callback() {
 
             $payment_method      = null;
             $subscription_period = null;
+            $product_type        = null;
+
+            foreach ( $order->get_items() as $item_id => $item ) {
+                // get the product id
+                $product_id = $item->get_product_id();
+
+                // get product type
+                $product_type = wc_get_product( $product_id )->get_type();
+            }
 
             // Check if the order is a subscription order
             if ( wcs_order_contains_subscription( $order ) ) {
@@ -111,9 +124,10 @@ function display_customer_information_callback() {
             echo 'Shipping Address 2 : ' . $shipping_address_2 . '<br>';
 
             echo '<br>';
-            
+
             echo 'Payment Method: ' . $payment_method . '<br>';
             echo 'Subscription: ' . $subscription_period . '<br>';
+            echo 'Product Type: ' . $product_type . '<br>';
 
 
             // make curl post request
