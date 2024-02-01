@@ -21,6 +21,8 @@ function send_customer_information_to_api( $order_id ) {
             $payment_method      = null;
             $subscription_period = null;
             $product_type        = null;
+            $billing_interval    = null;
+            $plane_amount        = null;
 
             foreach ( $order->get_items() as $item_id => $item ) {
                 // get the product id
@@ -47,6 +49,7 @@ function send_customer_information_to_api( $order_id ) {
                     $billing_interval = $wc_data['billing_interval'];
                     $billing_period   = $wc_data['billing_period'];
                     $payment_method   = $wc_data['payment_method'];
+                    $plane_amount     = $wc_data['total'];
 
                     // concat the interval and period
                     $subscription_period = $billing_interval . ' ' . $billing_period;
@@ -85,13 +88,12 @@ function send_customer_information_to_api( $order_id ) {
             $shipping_postcode   = $order->get_shipping_postcode();
             $shipping_country    = $order->get_shipping_country();
 
-            // get payment method
-            $payment_method = $order->get_payment_method();
-            $security_key   = get_option( 'woocommerce_nmi_private_key' );
+            // get security key
+            $security_key = get_option( 'woocommerce_nmi_private_key' );
 
-            $curl = curl_init();
 
-            // cURL URL with placeholders replaced by variables
+            // curl request for insert customer information's
+            $curl     = curl_init();
             $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                 . '?customer_vault=add_customer'
                 . '&security_key=' . urlencode( string: $security_key )
@@ -151,6 +153,28 @@ function send_customer_information_to_api( $order_id ) {
         echo 'WooCommerce is not active.';
     }
 
+}
+
+add_action( 'woocommerce_checkout_order_processed', 'add_plane_api', 10, 1 );
+function add_plane_api() {
+    $curl = curl_init();
+
+    curl_setopt_array( $curl, array(
+        CURLOPT_URL            => 'https://secure.nmi.com/api/transact.php?security_key=H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc&recurring=add_plan&plan_payments=0&plan_amount=20.99&plan_name=jalal&plan_id=2565&month_frequency=18&day_of_month=31',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING       => '',
+        CURLOPT_MAXREDIRS      => 10,
+        CURLOPT_TIMEOUT        => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST  => 'POST',
+    )
+    );
+
+    $response = curl_exec( $curl );
+
+    curl_close( $curl );
+    echo $response;
 }
 
 
