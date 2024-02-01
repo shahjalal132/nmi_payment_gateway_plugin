@@ -97,21 +97,22 @@ function display_customer_information_callback() {
             $shipping_country    = $order->get_shipping_country();
 
             // Display customer Billing information
-            echo 'First Name: ' . $first_name . '<br>';
-            echo 'Last Name: ' . $last_name . '<br>';
-            echo 'Customer Phone: ' . $customer_phone . '<br>';
+            echo '<h2>Billing Information</h2>';
+            echo 'Billing First Name: ' . $first_name . '<br>';
+            echo 'Billing Last Name: ' . $last_name . '<br>';
+            echo 'Billing Customer Phone: ' . $customer_phone . '<br>';
             echo 'Billing Company: ' . $billing_company . '<br>';
             echo 'Billing City: ' . $billing_city . '<br>';
-            echo 'Shipping State: ' . $billing_state . '<br>';
-            echo 'Shipping Postcode: ' . $billing_postcode . '<br>';
-            echo 'Shipping Country: ' . $billing_country . '<br>';
+            echo 'Billing State: ' . $billing_state . '<br>';
+            echo 'Billing Postcode: ' . $billing_postcode . '<br>';
+            echo 'Billing Country: ' . $billing_country . '<br>';
             echo 'Billing Address 1 : ' . $billing_address_1 . '<br>';
             echo 'Billing Address 2 : ' . $billing_address_2 . '<br>';
 
             echo '<br>';
-            echo '<br>';
 
             // Display customer Shipping information
+            echo '<h2>Shipping Information</h2>';
             echo 'Shipping First Name: ' . $shipping_first_name . '<br>';
             echo 'Shipping Last Name: ' . $shipping_last_name . '<br>';
             echo 'Shipping Phone: ' . $shipping_phone . '<br>';
@@ -125,6 +126,7 @@ function display_customer_information_callback() {
 
             echo '<br>';
 
+            echo '<h2>Payment Method Information</h2>';
             echo 'Payment Method: ' . $payment_method . '<br>';
             echo 'Subscription: ' . $subscription_period . '<br>';
             echo 'Product Type: ' . $product_type . '<br>';
