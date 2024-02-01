@@ -18,6 +18,48 @@ function send_customer_information_to_api( $order_id ) {
             // Get customer data
             $customer_data = get_userdata( $customer_id );
 
+            $payment_method      = null;
+            $subscription_period = null;
+            $product_type        = null;
+
+            foreach ( $order->get_items() as $item_id => $item ) {
+                // get the product id
+                $product_id = $item->get_product_id();
+
+                // get product type
+                $product_type = wc_get_product( $product_id )->get_type();
+            }
+
+            // Check if the order is a subscription order
+            if ( wcs_order_contains_subscription( $order ) ) {
+                // Get the subscription objects associated with the order
+                $subscriptions = wcs_get_subscriptions_for_order( $order );
+
+                // Loop through each subscription (assuming there's only one subscription per order)
+                foreach ( $subscriptions as $subscription ) {
+
+                    // get the subscription data
+                    $wc_data = $subscription->data;
+
+                    $s_year  = 'year';
+                    $s_month = 'month';
+
+                    $billing_interval = $wc_data['billing_interval'];
+                    $billing_period   = $wc_data['billing_period'];
+                    $payment_method   = $wc_data['payment_method'];
+
+                    // concat the interval and period
+                    $subscription_period = $billing_interval . ' ' . $billing_period;
+
+                    if ( strpos( $subscription_period, $s_year ) ) {
+                        $subscription_period = str_replace( $s_year, 'Years', $subscription_period );
+                    } else if ( strpos( $subscription_period, $s_month ) ) {
+                        $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
+                    }
+
+                }
+            }
+
             // get billing information
             $first_name        = $customer_data->billing_first_name;
             $last_name         = $customer_data->billing_last_name;
