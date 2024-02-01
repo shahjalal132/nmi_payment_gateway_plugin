@@ -19,6 +19,45 @@ function display_customer_information_callback() {
             // Get customer data
             $customer_data = get_userdata( $customer_id );
 
+            $payment_method      = null;
+            $subscription_period = null;
+
+            // Check if the order is a subscription order
+            if ( wcs_order_contains_subscription( $order ) ) {
+                // Get the subscription objects associated with the order
+                $subscriptions = wcs_get_subscriptions_for_order( $order );
+
+                // Loop through each subscription (assuming there's only one subscription per order)
+                foreach ( $subscriptions as $subscription ) {
+
+                    /* echo '<pre>';
+                    print_r( $subscription ); */
+
+                    $wc_data = $subscription->data;
+
+                    $s_year  = 'year';
+                    $s_month = 'month';
+
+                    /* echo '<pre>';
+                    print_r( $wc_data );
+                    wp_die(); */
+
+                    $billing_interval = $wc_data['billing_interval'];
+                    $billing_period   = $wc_data['billing_period'];
+                    $payment_method   = $wc_data['payment_method'];
+
+                    // concat the interval and period
+                    $subscription_period = $billing_interval . ' ' . $billing_period;
+
+                    if ( strpos( $subscription_period, $s_year ) ) {
+                        $subscription_period = str_replace( $s_year, 'Years', $subscription_period );
+                    } else if ( strpos( $subscription_period, $s_month ) ) {
+                        $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
+                    }
+
+                }
+            }
+
             // get billing information
             $first_name        = $customer_data->billing_first_name;
             $last_name         = $customer_data->billing_last_name;
@@ -71,7 +110,15 @@ function display_customer_information_callback() {
             echo 'Shipping Address 1 : ' . $shipping_address_1 . '<br>';
             echo 'Shipping Address 2 : ' . $shipping_address_2 . '<br>';
 
+            echo '<br>';
+            
+            echo 'Payment Method: ' . $payment_method . '<br>';
+            echo 'Subscription: ' . $subscription_period . '<br>';
+
+
             // make curl post request
+
+            die( 'not send curl request just testing' );
 
             $curl = curl_init();
 
