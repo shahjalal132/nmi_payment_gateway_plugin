@@ -131,10 +131,9 @@ function display_customer_information_callback() {
             echo 'Subscription: ' . $subscription_period . '<br>';
             echo 'Product Type: ' . $product_type . '<br>';
 
+            echo '<br>';
 
-            // make curl post request
-
-            die( 'not send curl request just testing' );
+            die( '<h2>not send curl request just testing</h2>' );
 
             $curl = curl_init();
 
