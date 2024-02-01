@@ -6,9 +6,6 @@ function send_customer_information_to_api( $order_id ) {
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
 
-        // Get the order ID (replace 123 with the actual order ID)
-        // $order_id = 2511;
-
         // Get the order object
         $order = wc_get_order( $order_id );
 
