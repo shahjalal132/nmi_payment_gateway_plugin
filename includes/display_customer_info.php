@@ -26,6 +26,7 @@ function display_customer_information_callback() {
             $payment_method      = null;
             $subscription_period = null;
             $product_type        = null;
+            $plane_amount        = null;
 
             foreach ( $order->get_items() as $item_id => $item ) {
                 // get the product id
@@ -58,6 +59,7 @@ function display_customer_information_callback() {
                     $billing_interval = $wc_data['billing_interval'];
                     $billing_period   = $wc_data['billing_period'];
                     $payment_method   = $wc_data['payment_method'];
+                    $plane_amount     = $wc_data['total'];
 
                     // concat the interval and period
                     $subscription_period = $billing_interval . ' ' . $billing_period;
@@ -130,6 +132,7 @@ function display_customer_information_callback() {
             echo 'Payment Method: ' . $payment_method . '<br>';
             echo 'Subscription: ' . $subscription_period . '<br>';
             echo 'Product Type: ' . $product_type . '<br>';
+            echo 'Plane Amount: ' . $plane_amount . '<br>';
 
             echo '<br>';
 
