@@ -1,7 +1,7 @@
 <?php
 
 
-add_action( 'woocommerce_checkout_order_processed', 'send_customer_information_to_api', 10, 1 );
+/* add_action( 'woocommerce_checkout_order_processed', 'send_customer_information_to_api', 10, 1 );
 function send_customer_information_to_api( $order_id ) {
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
@@ -177,7 +177,7 @@ function add_plane_api() {
 
     curl_close( $curl );
     echo $response;
-}
+} */
 
 
 class Xpay_Payment_Gateway {
@@ -279,8 +279,11 @@ class Xpay_Payment_Gateway {
                         // get payment period and time
                         $billing_interval_inner = $wc_data['billing_interval'];
                         $billing_period_inner   = $wc_data['billing_period'];
-
                         $this->billing_interval = $billing_interval_inner;
+
+                        // get payment type
+                        $this->payment_type = $wc_data['payment_method_title'];
+                        $this->currency     = $wc_data['currency'];
 
                         // get payment method and total amount
                         $this->payment_method = $wc_data['payment_method'];
@@ -333,8 +336,8 @@ class Xpay_Payment_Gateway {
                     . '&security_key=' . urlencode( string: $this->security_key )
                     . '&ccnumber=4111111111111111'
                     . '&ccexp=10%2F25'
-                    . '&currency=USD'
-                    . '&payment=creditcard'
+                    . '&currency=' . urlencode( string: $this->currency )
+                    . '&payment=' . urlencode( string: $this->payment_type )
                     . '&orderid=' . urlencode( $this->order_id )
                     . '&merchant_defined_field_=merchant_defined_field_1%3DValue'
                     . '&first_name=' . urlencode( $this->billing_first_name )
@@ -398,8 +401,12 @@ class Xpay_Payment_Gateway {
                 $this->billing_interval = 24;
             } else if ( '3 Years' == $this->subscription_period ) {
                 $this->billing_interval = 36;
+            } else if ( '4 Years' == $this->subscription_period ) {
+                $this->billing_interval = 48;
             }
 
+            // check day of month
+            $day_of_month = isset( $this->day_of_month ) ? $this->day_of_month : 15;
 
             $curl = curl_init();
 
@@ -411,7 +418,7 @@ class Xpay_Payment_Gateway {
                 . '&plan_name=' . urlencode( $this->subscription_period )
                 . '&plan_id=' . urlencode( $order_id )
                 . '&month_frequency=' . urlencode( $this->billing_interval )
-                . '&day_of_month=31';
+                . '&day_of_month=' . urlencode( $day_of_month );
 
 
             curl_setopt_array(
@@ -440,3 +447,5 @@ class Xpay_Payment_Gateway {
         // codeHere;
     }
 }
+
+new Xpay_Payment_Gateway();
