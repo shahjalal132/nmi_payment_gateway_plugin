@@ -389,47 +389,51 @@ class Xpay_Payment_Gateway {
 
     public function send_plane_information_to_api( $order_id ) {
 
-        // check condition for month_frequency
-        if ( '1 Years' == $this->subscription_period ) {
-            $this->billing_interval = 12;
-        } else if ( '2 Years' == $this->subscription_period ) {
-            $this->billing_interval = 24;
-        } else if ( '3 Years' == $this->subscription_period ) {
-            $this->billing_interval = 36;
+        if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) {
+
+            // check condition for month_frequency
+            if ( '1 Years' == $this->subscription_period ) {
+                $this->billing_interval = 12;
+            } else if ( '2 Years' == $this->subscription_period ) {
+                $this->billing_interval = 24;
+            } else if ( '3 Years' == $this->subscription_period ) {
+                $this->billing_interval = 36;
+            }
+
+
+            $curl = curl_init();
+
+            $curl_url = 'https://secure.nmi.com/api/transact.php'
+                . '?security_key=' . urlencode( $this->security_key )
+                . '&recurring=add_plan'
+                . '&plan_payments=0'
+                . '&plan_amount=' . urlencode( $this->plane_amount )
+                . '&plan_name=' . urlencode( $this->subscription_period )
+                . '&plan_id=' . urlencode( $order_id )
+                . '&month_frequency=' . urlencode( $this->billing_interval )
+                . '&day_of_month=31';
+
+
+            curl_setopt_array(
+                $curl,
+                array(
+                    CURLOPT_URL            => $curl_url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING       => '',
+                    CURLOPT_MAXREDIRS      => 10,
+                    CURLOPT_TIMEOUT        => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST  => 'POST',
+                )
+            );
+
+            $response = curl_exec( $curl );
+
+            curl_close( $curl );
+            echo '<h4>' . $response . '</h4>';
         }
 
-
-        $curl = curl_init();
-
-        $curl_url = 'https://secure.nmi.com/api/transact.php'
-            . '?security_key=' . urlencode( $this->security_key )
-            . '&recurring=add_plan'
-            . '&plan_payments=0'
-            . '&plan_amount=' . urlencode( $this->plane_amount )
-            . '&plan_name=' . urlencode( $this->subscription_period )
-            . '&plan_id=' . urlencode( $order_id )
-            . '&month_frequency=' . urlencode( $this->billing_interval )
-            . '&day_of_month=31';
-
-
-        curl_setopt_array(
-            $curl,
-            array(
-                CURLOPT_URL            => $curl_url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING       => '',
-                CURLOPT_MAXREDIRS      => 10,
-                CURLOPT_TIMEOUT        => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST  => 'POST',
-            )
-        );
-
-        $response = curl_exec( $curl );
-
-        curl_close( $curl );
-        echo '<h4>' . $response . '</h4>';
     }
 
     public function send_subscription_information_to_api( $order_id ) {
