@@ -54,7 +54,15 @@ function display_customer_information_callback() {
 
                     /* echo '<pre>';
                     print_r( $wc_data );
-                    wp_die(); */
+                    die(); */
+
+                    // get card data
+                    $meta_data = $wc_data['meta_data'][3];
+
+                    // get ccexp and last4 and card_brand
+                    $ccexp      = $meta_data->value->ccexp;
+                    $last4      = $meta_data->value->last4;
+                    $card_brand = $meta_data->value->brand;
 
                     $billing_interval = $wc_data['billing_interval'];
                     $billing_period   = $wc_data['billing_period'];
@@ -138,6 +146,9 @@ function display_customer_information_callback() {
             echo 'Plane Amount: ' . $plane_amount . '<br>';
             echo 'Currency: ' . $currency . '<br>';
             echo 'Payment Type: ' . $payment_type . '<br>';
+            echo 'CCExp: ' . $ccexp . '<br>';
+            echo 'Last 4 digits: ' . $last4 . '<br>';
+            echo 'Card Brand: ' . $card_brand . '<br>';
 
             echo '<br>';
 
