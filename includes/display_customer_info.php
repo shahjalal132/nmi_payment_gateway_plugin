@@ -61,6 +61,9 @@ function display_customer_information_callback() {
                     $payment_method   = $wc_data['payment_method'];
                     $plane_amount     = $wc_data['total'];
 
+                    $payment_type = $wc_data['payment_method_title'];
+                    $currency     = $wc_data['currency'];
+
                     // concat the interval and period
                     $subscription_period = $billing_interval . ' ' . $billing_period;
 
@@ -133,6 +136,8 @@ function display_customer_information_callback() {
             echo 'Subscription: ' . $subscription_period . '<br>';
             echo 'Product Type: ' . $product_type . '<br>';
             echo 'Plane Amount: ' . $plane_amount . '<br>';
+            echo 'Currency: ' . $currency . '<br>';
+            echo 'Payment Type: ' . $payment_type . '<br>';
 
             echo '<br>';
 
