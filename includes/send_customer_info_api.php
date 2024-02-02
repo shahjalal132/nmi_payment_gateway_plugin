@@ -159,22 +159,86 @@ add_action( 'woocommerce_checkout_order_processed', 'add_plane_api', 10, 1 );
 function add_plane_api() {
     $curl = curl_init();
 
-    curl_setopt_array( $curl, array(
-        CURLOPT_URL            => 'https://secure.nmi.com/api/transact.php?security_key=H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc&recurring=add_plan&plan_payments=0&plan_amount=20.99&plan_name=jalal&plan_id=2565&month_frequency=18&day_of_month=31',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING       => '',
-        CURLOPT_MAXREDIRS      => 10,
-        CURLOPT_TIMEOUT        => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST  => 'POST',
-    )
+    curl_setopt_array(
+        $curl,
+        array(
+            CURLOPT_URL            => 'https://secure.nmi.com/api/transact.php?security_key=H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc&recurring=add_plan&plan_payments=0&plan_amount=20.99&plan_name=jalal&plan_id=2565&month_frequency=18&day_of_month=31',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => '',
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+        )
     );
 
     $response = curl_exec( $curl );
 
     curl_close( $curl );
     echo $response;
+}
+
+
+class Xpay_Payment_Gateway {
+
+    // Define gateway variables
+    public $payment_method;
+    public $subscription_period;
+    public $product_type;
+    public $billing_interval;
+    public $plane_amount;
+
+    // Define billing information variable
+    public $billing_first_name;
+    public $billing_last_name;
+    public $billing_company;
+    public $billing_address_1;
+    public $billing_address_2;
+    public $billing_city;
+    public $billing_state;
+    public $billing_postcode;
+    public $billing_country;
+    public $billing_customer_email;
+    public $billing_customer_phone;
+
+    // Define Shipping information variable
+    public $shipping_first_name;
+    public $shipping_last_name;
+    public $shipping_company;
+    public $shipping_address_1;
+    public $shipping_address_2;
+    public $shipping_phone;
+    public $shipping_city;
+    public $shipping_state;
+    public $shipping_postcode;
+    public $shipping_country;
+
+    // Define security key variable
+    public $security_key;
+
+
+    public function __construct() {
+        $this->setup_hooks();
+    }
+
+    public function setup_hooks() {
+        add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_customer_information_to_api' ], 10, 1 );
+        add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_plane_information_to_api' ], 10, 1 );
+        add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_subscription_information_to_api' ], 10, 1 );
+    }
+
+    public function send_customer_information_to_api( $order_id ) {
+        // codeHere;
+    }
+
+    public function send_plane_information_to_api( $order_id ) {
+        // codeHere;
+    }
+
+    public function send_subscription_information_to_api( $order_id ) {
+        // codeHere;
+    }
 }
 
 
