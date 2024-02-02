@@ -274,7 +274,65 @@ class Xpay_Payment_Gateway {
     }
 
     public function send_subscription_information_to_api( $order_id ) {
-        // codeHere;
+
+        if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) {
+
+            $curl_url = 'https://secure.nmi.com/api/transact.php'
+                . '?recurring=add_subscription'
+                . '&plan_payments=0'
+                . '&plan_amount=' . urlencode( $this->plane_amount )
+                . '&security_key=' . urlencode( $this->security_key )
+                . '&ccnumber=4111111111111111'
+                . '&ccexp=' . urlencode( $this->cc_exp )
+                . '&payment=' . urlencode( $this->payment_type )
+                . '&checkname=' . urlencode( $this->shipping_first_name )
+                . '&checkaccount=24413815'
+                . '&checkaba=490000018'
+                . '&account_type=savings'
+                . '&currency=' . urlencode( $this->currency )
+                . '&account_holder_type=personal'
+                . '&sec_code=PPD'
+                . '&first_name=' . urlencode( $this->billing_first_name )
+                . '&last_name=' . urlencode( $this->billing_last_name )
+                . '&address1=' . urlencode( $this->billing_address_1 )
+                . '&city=' . urlencode( $this->billing_city )
+                . '&state=' . urlencode( $this->billing_state )
+                . '&zip=' . urlencode( $this->billing_postcode )
+                . '&country=' . urlencode( $this->billing_country )
+                . '&phone=' . urlencode( $this->billing_customer_phone )
+                . '&email=' . urlencode( $this->billing_customer_email )
+                . '&company=' . urlencode( $this->billing_company )
+                . '&address2=' . urlencode( $this->billing_address_2 )
+                . '&orderid=' . urlencode( $order_id )
+                . '&order_description=Order%20Description'
+                . '&day_of_month=31'
+                . '&customer_receipt=true'
+                . '&paused_subscription=true'
+                . '&acu_enabled=true'
+                . '&month_frequency=' . urlencode( $this->billing_interval );
+
+            $curl = curl_init();
+
+            curl_setopt_array(
+                $curl,
+                array(
+                    CURLOPT_URL            => $curl_url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING       => '',
+                    CURLOPT_MAXREDIRS      => 10,
+                    CURLOPT_TIMEOUT        => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST  => 'POST',
+                )
+            );
+
+            $response = curl_exec( $curl );
+
+            curl_close( $curl );
+            echo '<h4>' . $response . '</h4>';
+
+        }
     }
 }
 
