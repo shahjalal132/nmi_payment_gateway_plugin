@@ -229,7 +229,103 @@ class Xpay_Payment_Gateway {
     }
 
     public function send_customer_information_to_api( $order_id ) {
-        // codeHere;
+
+        // Make sure WooCommerce is active
+        if ( class_exists( 'WooCommerce' ) ) {
+
+            // Get the order object
+            $order = wc_get_order( $order_id );
+
+            // Check if the order exists
+            if ( $order ) {
+
+                // Get customer ID
+                $customer_id = $order->get_user_id();
+
+                // Get customer data
+                $customer_data = get_userdata( $customer_id );
+
+                foreach ( $order->get_items() as $item_id => $item ) {
+                    // get the product id
+                    $product_id = $item->get_product_id();
+
+                    // get product type
+                    $this->product_type = wc_get_product( $product_id )->get_type();
+                }
+
+
+                // Check if the order is a subscription order
+                if ( wcs_order_contains_subscription( $order ) ) {
+                    // Get the subscription objects associated with the order
+                    $subscriptions = wcs_get_subscriptions_for_order( $order );
+
+                    // Loop through each subscription (assuming there's only one subscription per order)
+                    foreach ( $subscriptions as $subscription ) {
+
+                        // get the subscription data
+                        $wc_data = $subscription->data;
+
+                        // define small year and month to convert Year and Month
+                        $s_year  = 'year';
+                        $s_month = 'month';
+
+                        // get payment period and time
+                        $billing_interval_inner = $wc_data['billing_interval'];
+                        $billing_period_inner   = $wc_data['billing_period'];
+
+                        $this->billing_interval = $billing_interval_inner;
+
+                        // get payment method and total amount
+                        $this->payment_method = $wc_data['payment_method'];
+                        $this->plane_amount   = $wc_data['total'];
+
+                        // concat the interval and period
+                        $this->subscription_period = $billing_interval_inner . ' ' . $billing_period_inner;
+
+                        if ( strpos( $this->subscription_period, $s_year ) ) {
+                            $this->subscription_period = str_replace( $s_year, 'Years', $this->subscription_period );
+                        } else if ( strpos( $this->subscription_period, $s_month ) ) {
+                            $this->subscription_period = str_replace( $s_month, 'Months', $this->subscription_period );
+                        }
+
+                    }
+                }
+
+                // get billing information
+                $this->billing_first_name     = $customer_data->billing_first_name;
+                $this->billing_last_name      = $customer_data->billing_last_name;
+                $this->billing_company        = $customer_data->billing_company;
+                $this->billing_address_1      = $customer_data->billing_address_1;
+                $this->billing_address_2      = $customer_data->billing_address_2;
+                $this->billing_city           = $order->get_billing_city();
+                $this->billing_state          = $order->get_billing_state();
+                $this->billing_postcode       = $order->get_billing_postcode();
+                $this->billing_country        = $order->get_billing_country();
+                $this->billing_customer_email = $order->get_billing_email();
+                $this->billing_customer_phone = $order->get_billing_phone();
+
+                // Get shipping information
+                $this->shipping_first_name = $customer_data->shipping_first_name;
+                $this->shipping_last_name  = $customer_data->shipping_last_name;
+                $this->shipping_company    = $customer_data->shipping_company;
+                $this->shipping_address_1  = $customer_data->shipping_address_1;
+                $this->shipping_address_2  = $customer_data->shipping_address_2;
+                $this->shipping_phone      = $customer_data->shipping_phone;
+                $this->shipping_city       = $order->get_shipping_city();
+                $this->shipping_state      = $order->get_shipping_state();
+                $this->shipping_postcode   = $order->get_shipping_postcode();
+                $this->shipping_country    = $order->get_shipping_country();
+
+                // get security key
+                $this->security_key = get_option( 'woocommerce_nmi_private_key' );
+
+                
+            } else {
+                echo 'Order not found.';
+            }
+        } else {
+            echo 'WooCommerce is not active.';
+        }
     }
 
     public function send_plane_information_to_api( $order_id ) {
@@ -240,6 +336,3 @@ class Xpay_Payment_Gateway {
         // codeHere;
     }
 }
-
-
-?>
