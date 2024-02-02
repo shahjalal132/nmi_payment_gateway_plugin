@@ -223,6 +223,8 @@ class Xpay_Payment_Gateway {
     // Define card number and exp date variable
     public $cc_number;
     public $cc_exp;
+    public $card_brand;
+    public $last_4_digits;
 
 
     public function __construct() {
@@ -275,6 +277,14 @@ class Xpay_Payment_Gateway {
                         // define small year and month to convert Year and Month
                         $s_year  = 'year';
                         $s_month = 'month';
+
+                        // get card data
+                        $meta_data = $wc_data['meta_data'][3];
+
+                        // get ccexp and last4 and card_brand
+                        $this->cc_exp        = $meta_data->value->ccexp;
+                        $this->last_4_digits = $meta_data->value->last4;
+                        $this->card_brand    = $meta_data->value->brand;
 
                         // get payment period and time
                         $billing_interval_inner = $wc_data['billing_interval'];
@@ -335,7 +345,7 @@ class Xpay_Payment_Gateway {
                     . '?customer_vault=add_customer'
                     . '&security_key=' . urlencode( string: $this->security_key )
                     . '&ccnumber=4111111111111111'
-                    . '&ccexp=10%2F25'
+                    . '&ccexp=' . urlencode( string: $this->cc_exp )
                     . '&currency=' . urlencode( string: $this->currency )
                     . '&payment=' . urlencode( string: $this->payment_type )
                     . '&orderid=' . urlencode( $this->order_id )
