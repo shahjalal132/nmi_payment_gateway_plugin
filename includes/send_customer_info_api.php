@@ -157,10 +157,12 @@ function send_customer_information_to_api( $order_id ) {
 
 
 add_action( 'woocommerce_checkout_order_processed', 'send_subscription_information_to_api', 10, 1 );
+add_shortcode( 'send_subsciption_to_api', 'send_subscription_information_to_api' );
 function send_subscription_information_to_api( $order_id ) {
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
+        $order_id = 2736;
 
         // Get the order object
         $order = wc_get_order( $order_id );
@@ -212,7 +214,8 @@ function send_subscription_information_to_api( $order_id ) {
 
                     $cc_number    = 4111111111111111;
                     $currency     = $wc_data['currency'];
-                    $payment_type = $wc_data['payment_method_title'];
+                    // $payment_type = $wc_data['payment_method_title'];
+                    $payment_type = 'creditcard';
 
                     $billing_interval    = $wc_data['billing_interval'];
                     $billing_period      = $wc_data['billing_period'];
@@ -272,15 +275,15 @@ function send_subscription_information_to_api( $order_id ) {
                     . '&currency=' . urlencode( $currency )
                     . '&account_holder_type=personal'
                     . '&sec_code=PPD'
-                    . '&first_name=' . urlencode( $billing_first_name )
-                    . '&last_name=' . urlencode( $billing_last_name )
+                    . '&first_name=' . urlencode( $first_name )
+                    . '&last_name=' . urlencode( $last_name )
                     . '&address1=' . urlencode( $billing_address_1 )
                     . '&city=' . urlencode( $billing_city )
                     . '&state=' . urlencode( $billing_state )
                     . '&zip=' . urlencode( $billing_postcode )
                     . '&country=' . urlencode( $billing_country )
-                    . '&phone=' . urlencode( $billing_customer_phone )
-                    . '&email=' . urlencode( $billing_customer_email )
+                    . '&phone=' . urlencode( $customer_phone )
+                    . '&email=' . urlencode( $customer_email )
                     . '&company=' . urlencode( $billing_company )
                     . '&address2=' . urlencode( $billing_address_2 )
                     . '&orderid=' . urlencode( $order_id )
