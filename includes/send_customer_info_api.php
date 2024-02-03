@@ -47,12 +47,12 @@ class Xpay_Payment_Gateway {
     public $last_4_digits;
 
     // Shared data properties
-    private $shared_data;
+    public $order_id;
 
 
     public function __construct() {
         $this->setup_hooks();
-        $this->shared_data = array(); // Initialize shared_data as an empty array
+        $this->send_customer_information_to_api( $this->order_id );
     }
 
     public function setup_hooks() {
@@ -65,6 +65,8 @@ class Xpay_Payment_Gateway {
     }
 
     public function send_customer_information_to_api( $order_id ) {
+
+        $this->order_id = $order_id;
 
         // Make sure WooCommerce is active
         if ( class_exists( 'WooCommerce' ) ) {
@@ -256,7 +258,7 @@ class Xpay_Payment_Gateway {
         }
     }
 
-    public function send_plane_information_to_api( $order_id ) {
+    public function send_plane_information_to_api() {
 
         /* if ( 'nmi' == $this->payment_method && ( 'simple-subscription' == $this->product_type || 'variable-subscription' == $this->product_type ) ) { */
 
@@ -268,7 +270,7 @@ class Xpay_Payment_Gateway {
             . '&plan_payments=0'
             . '&plan_amount=' . urlencode( $this->plane_amount )
             . '&plan_name=' . urlencode( $this->subscription_period )
-            . '&plan_id=' . urlencode( $order_id )
+            . '&plan_id=' . urlencode( $this->order_id )
             . '&month_frequency=' . urlencode( $this->billing_interval )
             . '&day_of_month=' . urlencode( $this->day_of_month );
 
@@ -302,7 +304,7 @@ class Xpay_Payment_Gateway {
 
     }
 
-    public function send_subscription_information_to_api( $order_id ) {
+    public function send_subscription_information_to_api() {
 
         /* if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) { */
 
@@ -332,7 +334,7 @@ class Xpay_Payment_Gateway {
             . '&email=' . urlencode( $this->billing_customer_email )
             . '&company=' . urlencode( $this->billing_company )
             . '&address2=' . urlencode( $this->billing_address_2 )
-            . '&orderid=' . urlencode( $order_id )
+            . '&orderid=' . urlencode( $this->order_id )
             . '&order_description=Order%20Description'
             . '&day_of_month=31'
             . '&customer_receipt=true'
