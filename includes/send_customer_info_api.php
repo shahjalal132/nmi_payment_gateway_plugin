@@ -6,7 +6,7 @@ add_shortcode( 'send_customer_to_api', 'send_customer_information_to_api' );
 function send_customer_information_to_api( $order_id ) {
 
     // static order id
-    $order_id = 2767;
+    //$order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
