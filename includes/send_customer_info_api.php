@@ -327,7 +327,8 @@ add_action( 'woocommerce_checkout_order_processed', 'send_plane_information_to_a
 add_shortcode( 'send_plane_to_api', 'send_plane_information_to_api' );
 function send_plane_information_to_api( $order_id ) {
 
-    // $order_id = 2736;
+    // static order id
+    // $order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
@@ -349,14 +350,14 @@ function send_plane_information_to_api( $order_id ) {
             $product_type        = null;
             $billing_interval    = null;
             $plane_amount        = null;
-            $cc_number           = 4111111111111111;
-            $cc_exp              = null;
-            $currency            = null;
             $payment_type        = null;
-            $last_4_digits       = null;
-            $card_brand          = null;
+            $day_of_month        = 15;
+
+            $cc_number    = 4111111111111111; // replace dynamic credit card number
+            $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
 
             foreach ( $order->get_items() as $item_id => $item ) {
+
                 // get the product id
                 $product_id = $item->get_product_id();
 
@@ -366,6 +367,7 @@ function send_plane_information_to_api( $order_id ) {
 
             // Check if the order is a subscription order
             if ( wcs_order_contains_subscription( $order ) ) {
+
                 // Get the subscription objects associated with the order
                 $subscriptions = wcs_get_subscriptions_for_order( $order );
 
@@ -377,14 +379,6 @@ function send_plane_information_to_api( $order_id ) {
 
                     $s_year  = 'year';
                     $s_month = 'month';
-
-                    // get card data
-                    $meta_data = $wc_data['meta_data'][3];
-
-                    // get ccexp and last4 and card_brand
-                    $cc_exp        = $meta_data->value->ccexp;
-                    $last_4_digits = $meta_data->value->last4;
-                    $card_brand    = $meta_data->value->brand;
 
                     $billing_interval    = $wc_data['billing_interval'];
                     $billing_period      = $wc_data['billing_period'];
@@ -407,39 +401,39 @@ function send_plane_information_to_api( $order_id ) {
 
                 }
 
-                // get security key
-                $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc';
+                // Add a plane conditionally
+                if ( 'nmi' == $payment_method && ( 'simple-subscription' == $product_type || 'variable-subscription' == $product_type ) ) {
 
-                $curl = curl_init();
+                    $curl     = curl_init();
+                    $curl_url = 'https://secure.nmi.com/api/transact.php'
+                        . '?security_key=' . urlencode( $security_key )
+                        . '&recurring=add_plan'
+                        . '&plan_payments=0'
+                        . '&plan_amount=' . urlencode( $plane_amount )
+                        . '&plan_name=' . urlencode( $subscription_period )
+                        . '&plan_id=' . urlencode( $order_id )
+                        . '&month_frequency=' . urlencode( $billing_interval )
+                        . '&day_of_month=' . urlencode( $day_of_month );
 
-                $curl_url = 'https://secure.nmi.com/api/transact.php'
-                    . '?security_key=' . urlencode( $security_key )
-                    . '&recurring=add_plan'
-                    . '&plan_payments=0'
-                    . '&plan_amount=' . urlencode( $plane_amount )
-                    . '&plan_name=' . urlencode( $subscription_period )
-                    . '&plan_id=' . urlencode( $order_id )
-                    . '&month_frequency=' . urlencode( $billing_interval )
-                    . '&day_of_month=15';
+                    curl_setopt_array(
+                        $curl,
+                        array(
+                            CURLOPT_URL            => $curl_url,
+                            CURLOPT_RETURNTRANSFER => true,
+                            CURLOPT_ENCODING       => '',
+                            CURLOPT_MAXREDIRS      => 10,
+                            CURLOPT_TIMEOUT        => 0,
+                            CURLOPT_FOLLOWLOCATION => true,
+                            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                            CURLOPT_CUSTOMREQUEST  => 'POST',
+                        )
+                    );
 
-                curl_setopt_array(
-                    $curl,
-                    array(
-                        CURLOPT_URL            => $curl_url,
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_ENCODING       => '',
-                        CURLOPT_MAXREDIRS      => 10,
-                        CURLOPT_TIMEOUT        => 0,
-                        CURLOPT_FOLLOWLOCATION => true,
-                        CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                        CURLOPT_CUSTOMREQUEST  => 'POST',
-                    )
-                );
+                    $response = curl_exec( $curl );
 
-                $response = curl_exec( $curl );
-
-                curl_close( $curl );
-                echo $response;
+                    curl_close( $curl );
+                    echo $response;
+                }
             }
 
         } else {
