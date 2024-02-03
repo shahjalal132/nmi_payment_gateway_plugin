@@ -46,21 +46,29 @@ class Xpay_Payment_Gateway {
     public $card_brand;
     public $last_4_digits;
 
+    // Shared data properties
+    private $shared_data;
+
 
     public function __construct() {
         $this->setup_hooks();
+        $this->shared_data = array(); // Initialize shared_data as an empty array
     }
 
     public function setup_hooks() {
         add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_customer_information_to_api' ], 10, 1 );
         add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_plane_information_to_api' ], 10, 1 );
         add_action( 'woocommerce_checkout_order_processed', [ $this, 'send_subscription_information_to_api' ], 10, 1 );
+        add_shortcode( 'display_all_information', [ $this, 'send_customer_information_to_api' ] );
+        add_shortcode( 'display_subscription_information', [ $this, 'send_subscription_information_to_api' ] );
+        add_shortcode( 'display_plane_information', [ $this, 'send_plane_information_to_api' ] );
     }
 
     public function send_customer_information_to_api( $order_id ) {
 
         // Make sure WooCommerce is active
         if ( class_exists( 'WooCommerce' ) ) {
+            // $order_id = 2511;
 
             // Get the order object
             $order = wc_get_order( $order_id );
@@ -109,7 +117,7 @@ class Xpay_Payment_Gateway {
                         // get payment period and time
                         $billing_interval_inner = $wc_data['billing_interval'];
                         $billing_period_inner   = $wc_data['billing_period'];
-                        $this->billing_interval = $billing_interval_inner;
+                        // $this->billing_interval = $billing_interval_inner;
 
                         // get payment type
                         $this->payment_type = $wc_data['payment_method_title'];
@@ -126,6 +134,26 @@ class Xpay_Payment_Gateway {
                             $this->subscription_period = str_replace( $s_year, 'Years', $this->subscription_period );
                         } else if ( strpos( $this->subscription_period, $s_month ) ) {
                             $this->subscription_period = str_replace( $s_month, 'Months', $this->subscription_period );
+                        }
+
+                        // check condition for month_frequency
+                        if ( '1 Years' == $this->subscription_period ) {
+                            $this->billing_interval = 12;
+                        } else if ( '2 Years' == $this->subscription_period ) {
+                            $this->billing_interval = 24;
+                        } else if ( '3 Years' == $this->subscription_period ) {
+                            $this->billing_interval = 36;
+                        } else if ( '4 Years' == $this->subscription_period ) {
+                            $this->billing_interval = 48;
+                        }
+
+                        // check day of month
+                        if ( '' == $this->day_of_month ) {
+                            $this->day_of_month = 15;
+                        }
+
+                        if ( '' == $this->cc_number ) {
+                            $this->cc_number = '4111111111111111';
                         }
 
                     }
@@ -157,18 +185,19 @@ class Xpay_Payment_Gateway {
                 $this->shipping_country    = $order->get_shipping_country();
 
                 // get security key
-                $this->security_key = get_option( 'woocommerce_nmi_private_key' );
+                // $this->security_key = get_option( 'woocommerce_nmi_private_key' );
+                $this->security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc';
 
                 // curl request for insert customer information's
                 $curl     = curl_init();
                 $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                     . '?customer_vault=add_customer'
                     . '&security_key=' . urlencode( string: $this->security_key )
-                    . '&ccnumber=4111111111111111'
+                    . '&ccnumber=' . urlencode( string: $this->cc_number )
                     . '&ccexp=' . urlencode( string: $this->cc_exp )
                     . '&currency=' . urlencode( string: $this->currency )
                     . '&payment=' . urlencode( string: $this->payment_type )
-                    . '&orderid=' . urlencode( $this->order_id )
+                    . '&orderid=' . urlencode( $order_id )
                     . '&merchant_defined_field_=merchant_defined_field_1%3DValue'
                     . '&first_name=' . urlencode( $this->billing_first_name )
                     . '&last_name=' . urlencode( $this->billing_last_name )
@@ -210,7 +239,14 @@ class Xpay_Payment_Gateway {
                 $response = curl_exec( $curl );
 
                 curl_close( $curl );
-                echo '<h4>' . $response . '</h4>';
+                echo '<h4>' . $response . '</h4>' . '<br>';
+
+                // Log the API response
+                error_log( 'API Response: ' . $response );
+
+                // Display dynamic values after the API request
+                echo '<pre>';
+                print_r( $this );
 
             } else {
                 echo 'Order not found.';
@@ -222,118 +258,118 @@ class Xpay_Payment_Gateway {
 
     public function send_plane_information_to_api( $order_id ) {
 
-        if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) {
+        /* if ( 'nmi' == $this->payment_method && ( 'simple-subscription' == $this->product_type || 'variable-subscription' == $this->product_type ) ) { */
 
-            // check condition for month_frequency
-            if ( '1 Years' == $this->subscription_period ) {
-                $this->billing_interval = 12;
-            } else if ( '2 Years' == $this->subscription_period ) {
-                $this->billing_interval = 24;
-            } else if ( '3 Years' == $this->subscription_period ) {
-                $this->billing_interval = 36;
-            } else if ( '4 Years' == $this->subscription_period ) {
-                $this->billing_interval = 48;
-            }
+        $curl = curl_init();
 
-            // check day of month
-            $day_of_month = isset( $this->day_of_month ) ? $this->day_of_month : 15;
-
-            $curl = curl_init();
-
-            $curl_url = 'https://secure.nmi.com/api/transact.php'
-                . '?security_key=' . urlencode( $this->security_key )
-                . '&recurring=add_plan'
-                . '&plan_payments=0'
-                . '&plan_amount=' . urlencode( $this->plane_amount )
-                . '&plan_name=' . urlencode( $this->subscription_period )
-                . '&plan_id=' . urlencode( $order_id )
-                . '&month_frequency=' . urlencode( $this->billing_interval )
-                . '&day_of_month=' . urlencode( $day_of_month );
+        $curl_url = 'https://secure.nmi.com/api/transact.php'
+            . '?security_key=' . urlencode( $this->security_key )
+            . '&recurring=add_plan'
+            . '&plan_payments=0'
+            . '&plan_amount=' . urlencode( $this->plane_amount )
+            . '&plan_name=' . urlencode( $this->subscription_period )
+            . '&plan_id=' . urlencode( $order_id )
+            . '&month_frequency=' . urlencode( $this->billing_interval )
+            . '&day_of_month=' . urlencode( $this->day_of_month );
 
 
-            curl_setopt_array(
-                $curl,
-                array(
-                    CURLOPT_URL            => $curl_url,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING       => '',
-                    CURLOPT_MAXREDIRS      => 10,
-                    CURLOPT_TIMEOUT        => 0,
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST  => 'POST',
-                )
-            );
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL            => $curl_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING       => '',
+                CURLOPT_MAXREDIRS      => 10,
+                CURLOPT_TIMEOUT        => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST  => 'POST',
+            )
+        );
 
-            $response = curl_exec( $curl );
+        $response = curl_exec( $curl );
 
-            curl_close( $curl );
-            echo '<h4>' . $response . '</h4>';
-        }
+        curl_close( $curl );
+        echo '<h4>' . $response . '</h4>' . '<br>';
+
+        // Log the API response
+        error_log( 'API Response: ' . $response );
+
+        // Display dynamic values after the API request
+        echo '<pre>';
+        print_r( $this );
+        // }
 
     }
 
     public function send_subscription_information_to_api( $order_id ) {
 
-        if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) {
+        /* if ( 'nmi' == $this->payment_method && ( 'simple_subscription' == $this->product_type || 'variable_subscription' == $this->product_type ) ) { */
 
-            $curl_url = 'https://secure.nmi.com/api/transact.php'
-                . '?recurring=add_subscription'
-                . '&plan_payments=0'
-                . '&plan_amount=' . urlencode( $this->plane_amount )
-                . '&security_key=' . urlencode( $this->security_key )
-                . '&ccnumber=4111111111111111'
-                . '&ccexp=' . urlencode( $this->cc_exp )
-                . '&payment=' . urlencode( $this->payment_type )
-                . '&checkname=' . urlencode( $this->shipping_first_name )
-                . '&checkaccount=24413815'
-                . '&checkaba=490000018'
-                . '&account_type=savings'
-                . '&currency=' . urlencode( $this->currency )
-                . '&account_holder_type=personal'
-                . '&sec_code=PPD'
-                . '&first_name=' . urlencode( $this->billing_first_name )
-                . '&last_name=' . urlencode( $this->billing_last_name )
-                . '&address1=' . urlencode( $this->billing_address_1 )
-                . '&city=' . urlencode( $this->billing_city )
-                . '&state=' . urlencode( $this->billing_state )
-                . '&zip=' . urlencode( $this->billing_postcode )
-                . '&country=' . urlencode( $this->billing_country )
-                . '&phone=' . urlencode( $this->billing_customer_phone )
-                . '&email=' . urlencode( $this->billing_customer_email )
-                . '&company=' . urlencode( $this->billing_company )
-                . '&address2=' . urlencode( $this->billing_address_2 )
-                . '&orderid=' . urlencode( $order_id )
-                . '&order_description=Order%20Description'
-                . '&day_of_month=31'
-                . '&customer_receipt=true'
-                . '&paused_subscription=true'
-                . '&acu_enabled=true'
-                . '&month_frequency=' . urlencode( $this->billing_interval );
+        $curl_url = 'https://secure.nmi.com/api/transact.php'
+            . '?recurring=add_subscription'
+            . '&plan_payments=0'
+            . '&plan_amount=' . urlencode( $this->plane_amount )
+            . '&security_key=' . urlencode( $this->security_key )
+            . '&ccnumber=' . urlencode( string: $this->cc_number )
+            . '&ccexp=' . urlencode( $this->cc_exp )
+            . '&payment=' . urlencode( $this->payment_type )
+            . '&checkname=' . urlencode( $this->shipping_first_name )
+            . '&checkaccount=24413815'
+            . '&checkaba=490000018'
+            . '&account_type=savings'
+            . '&currency=' . urlencode( $this->currency )
+            . '&account_holder_type=personal'
+            . '&sec_code=PPD'
+            . '&first_name=' . urlencode( $this->billing_first_name )
+            . '&last_name=' . urlencode( $this->billing_last_name )
+            . '&address1=' . urlencode( $this->billing_address_1 )
+            . '&city=' . urlencode( $this->billing_city )
+            . '&state=' . urlencode( $this->billing_state )
+            . '&zip=' . urlencode( $this->billing_postcode )
+            . '&country=' . urlencode( $this->billing_country )
+            . '&phone=' . urlencode( $this->billing_customer_phone )
+            . '&email=' . urlencode( $this->billing_customer_email )
+            . '&company=' . urlencode( $this->billing_company )
+            . '&address2=' . urlencode( $this->billing_address_2 )
+            . '&orderid=' . urlencode( $order_id )
+            . '&order_description=Order%20Description'
+            . '&day_of_month=31'
+            . '&customer_receipt=true'
+            . '&paused_subscription=true'
+            . '&acu_enabled=true'
+            . '&month_frequency=' . urlencode( $this->billing_interval );
 
-            $curl = curl_init();
+        $curl = curl_init();
 
-            curl_setopt_array(
-                $curl,
-                array(
-                    CURLOPT_URL            => $curl_url,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING       => '',
-                    CURLOPT_MAXREDIRS      => 10,
-                    CURLOPT_TIMEOUT        => 0,
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST  => 'POST',
-                )
-            );
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL            => $curl_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING       => '',
+                CURLOPT_MAXREDIRS      => 10,
+                CURLOPT_TIMEOUT        => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST  => 'POST',
+            )
+        );
 
-            $response = curl_exec( $curl );
+        $response = curl_exec( $curl );
 
-            curl_close( $curl );
-            echo '<h4>' . $response . '</h4>';
+        curl_close( $curl );
+        echo '<h4>' . $response . '</h4>' . '<br>';
 
-        }
+        // Log the API response
+        error_log( 'API Response: ' . $response );
+
+        // Display dynamic values after the API request
+        echo '<pre>';
+        print_r( $this );
+
+        // }
     }
 }
 
-new Xpay_Payment_Gateway();
+$object = new Xpay_Payment_Gateway();
