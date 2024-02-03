@@ -436,7 +436,7 @@ class Xpay_Payment_Gateway {
 
         // Make sure WooCommerce is active
         if ( class_exists( 'WooCommerce' ) ) {
-            // $order_id = 2511;
+            // $order_id = 2736;
 
             // Get the order object
             $order = wc_get_order( $order_id );
@@ -509,7 +509,7 @@ class Xpay_Payment_Gateway {
                             $this->billing_interval = 12;
                         } else if ( '2 Years' == $this->subscription_period ) {
                             $this->billing_interval = 24;
-                        } else{
+                        } else {
                             $this->billing_interval = 6;
                         }
 
@@ -581,7 +581,7 @@ class Xpay_Payment_Gateway {
                     . '&email=' . urlencode( $this->billing_customer_email )
                     . '&company=' . urlencode( $this->billing_company )
                     . '&address2=' . urlencode( $this->billing_address_2 )
-                    . '&orderid=' . urlencode( $order_id )
+                    . '&orderid=' . urlencode( $this->order_id )
                     . '&order_description=Order%20Description'
                     . '&day_of_month=31'
                     . '&customer_receipt=true'
