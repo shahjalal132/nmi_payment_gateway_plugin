@@ -509,10 +509,8 @@ class Xpay_Payment_Gateway {
                             $this->billing_interval = 12;
                         } else if ( '2 Years' == $this->subscription_period ) {
                             $this->billing_interval = 24;
-                        } else if ( '3 Years' == $this->subscription_period ) {
-                            $this->billing_interval = 36;
-                        } else if ( '4 Years' == $this->subscription_period ) {
-                            $this->billing_interval = 48;
+                        } else{
+                            $this->billing_interval = 6;
                         }
 
                         // check day of month
@@ -564,7 +562,7 @@ class Xpay_Payment_Gateway {
                     . '&security_key=' . urlencode( $this->security_key )
                     . '&ccnumber=' . urlencode( string: $this->cc_number )
                     . '&ccexp=' . urlencode( $this->cc_exp )
-                    . '&payment=' . urlencode( $this->payment_type )
+                    // . '&payment=' . urlencode( $this->payment_type )
                     . '&checkname=' . urlencode( $this->shipping_first_name )
                     . '&checkaccount=24413815'
                     . '&checkaba=490000018'
@@ -583,7 +581,7 @@ class Xpay_Payment_Gateway {
                     . '&email=' . urlencode( $this->billing_customer_email )
                     . '&company=' . urlencode( $this->billing_company )
                     . '&address2=' . urlencode( $this->billing_address_2 )
-                    . '&orderid=' . urlencode( $this->order_id )
+                    . '&orderid=' . urlencode( $order_id )
                     . '&order_description=Order%20Description'
                     . '&day_of_month=31'
                     . '&customer_receipt=true'
