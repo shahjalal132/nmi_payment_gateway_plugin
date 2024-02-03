@@ -157,12 +157,14 @@ function send_customer_information_to_api( $order_id ) {
 
 
 add_action( 'woocommerce_checkout_order_processed', 'send_subscription_information_to_api', 10, 1 );
-add_shortcode( 'send_subsciption_to_api', 'send_subscription_information_to_api' );
+add_shortcode( 'send_subscription_to_api', 'send_subscription_information_to_api' );
 function send_subscription_information_to_api( $order_id ) {
+
+    // static order id
+    // $order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
-        // $order_id = 2736;
 
         // Get the order object
         $order = wc_get_order( $order_id );
@@ -176,13 +178,8 @@ function send_subscription_information_to_api( $order_id ) {
             // Get customer data
             $customer_data = get_userdata( $customer_id );
 
-            $payment_method      = null;
-            $subscription_period = null;
-            $product_type        = null;
-            $billing_interval    = null;
-            $plane_amount        = null;
-
             foreach ( $order->get_items() as $item_id => $item ) {
+
                 // get the product id
                 $product_id = $item->get_product_id();
 
@@ -192,6 +189,7 @@ function send_subscription_information_to_api( $order_id ) {
 
             // Check if the order is a subscription order
             if ( wcs_order_contains_subscription( $order ) ) {
+
                 // Get the subscription objects associated with the order
                 $subscriptions = wcs_get_subscriptions_for_order( $order );
 
@@ -212,10 +210,11 @@ function send_subscription_information_to_api( $order_id ) {
                     $last_4_digits = $meta_data->value->last4;
                     $card_brand    = $meta_data->value->brand;
 
-                    $cc_number = 4111111111111111;
-                    $currency  = $wc_data['currency'];
+                    $currency = $wc_data['currency'] ?? null;
                     // $payment_type = $wc_data['payment_method_title'];
-                    $payment_type = 'creditcard';
+                    $payment_type      = $payment_type ?? 'creditcard';
+                    $day_of_month      = $day_of_month ?? 15;
+                    $order_description = $order_description ?? '';
 
                     $billing_interval    = $wc_data['billing_interval'];
                     $billing_period      = $wc_data['billing_period'];
@@ -228,6 +227,9 @@ function send_subscription_information_to_api( $order_id ) {
                     } else if ( strpos( $subscription_period, $s_month ) ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
+
+                    $cc_number    = 4111111111111111; // replace dynamic credit card number
+                    $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
 
                 }
 
@@ -256,62 +258,62 @@ function send_subscription_information_to_api( $order_id ) {
                 $shipping_postcode   = $order->get_shipping_postcode();
                 $shipping_country    = $order->get_shipping_country();
 
-                // get security key
-                $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc';
+                // Add a subscription conditionally
+                if ( 'nmi' == $payment_method && ( 'simple-subscription' == $product_type || 'variable-subscription' == $product_type ) ) {
+                    $curl     = curl_init();
+                    $curl_url = 'https://secure.nmi.com/api/transact.php'
+                        . '?recurring=add_subscription'
+                        . '&plan_payments=0'
+                        . '&plan_amount=' . urlencode( $plane_amount )
+                        . '&security_key=' . urlencode( $security_key )
+                        . '&ccnumber=' . urlencode( string: $cc_number )
+                        . '&ccexp=' . urlencode( $cc_exp )
+                        . '&payment=' . urlencode( $payment_type )
+                        . '&checkname=' . urlencode( $first_name )
+                        . '&checkaccount=24413815' // replace dynamic account number
+                        . '&checkaba=490000018' // replace dynamic aba number
+                        . '&account_type=savings'
+                        . '&currency=' . urlencode( $currency )
+                        . '&account_holder_type=personal'
+                        . '&sec_code=PPD'
+                        . '&first_name=' . urlencode( $first_name )
+                        . '&last_name=' . urlencode( $last_name )
+                        . '&address1=' . urlencode( $billing_address_1 )
+                        . '&city=' . urlencode( $billing_city )
+                        . '&state=' . urlencode( $billing_state )
+                        . '&zip=' . urlencode( $billing_postcode )
+                        . '&country=' . urlencode( $billing_country )
+                        . '&phone=' . urlencode( $customer_phone )
+                        . '&email=' . urlencode( $customer_email )
+                        . '&company=' . urlencode( $billing_company )
+                        . '&address2=' . urlencode( $billing_address_2 )
+                        . '&orderid=' . urlencode( $order_id )
+                        . '&order_description=' . urlencode( $order_description )
+                        . '&day_of_month=' . urlencode( $day_of_month )
+                        . '&customer_receipt=true'
+                        . '&paused_subscription=true'
+                        . '&acu_enabled=true'
+                        . '&month_frequency=' . urlencode( $billing_interval );
 
-                $curl     = curl_init();
-                $curl_url = 'https://secure.nmi.com/api/transact.php'
-                    . '?recurring=add_subscription'
-                    . '&plan_payments=0'
-                    . '&plan_amount=' . urlencode( $plane_amount )
-                    . '&security_key=' . urlencode( $security_key )
-                    . '&ccnumber=' . urlencode( string: $cc_number )
-                    . '&ccexp=' . urlencode( $cc_exp )
-                    . '&payment=' . urlencode( $payment_type )
-                    . '&checkname=' . urlencode( $first_name )
-                    . '&checkaccount=24413815'
-                    . '&checkaba=490000018'
-                    . '&account_type=savings'
-                    . '&currency=' . urlencode( $currency )
-                    . '&account_holder_type=personal'
-                    . '&sec_code=PPD'
-                    . '&first_name=' . urlencode( $first_name )
-                    . '&last_name=' . urlencode( $last_name )
-                    . '&address1=' . urlencode( $billing_address_1 )
-                    . '&city=' . urlencode( $billing_city )
-                    . '&state=' . urlencode( $billing_state )
-                    . '&zip=' . urlencode( $billing_postcode )
-                    . '&country=' . urlencode( $billing_country )
-                    . '&phone=' . urlencode( $customer_phone )
-                    . '&email=' . urlencode( $customer_email )
-                    . '&company=' . urlencode( $billing_company )
-                    . '&address2=' . urlencode( $billing_address_2 )
-                    . '&orderid=' . urlencode( $order_id )
-                    . '&order_description=Order%20Description'
-                    . '&day_of_month=31'
-                    . '&customer_receipt=true'
-                    . '&paused_subscription=true'
-                    . '&acu_enabled=true'
-                    . '&month_frequency=' . urlencode( $billing_interval );
+                    curl_setopt_array(
+                        $curl,
+                        array(
+                            CURLOPT_URL            => $curl_url,
+                            CURLOPT_RETURNTRANSFER => true,
+                            CURLOPT_ENCODING       => '',
+                            CURLOPT_MAXREDIRS      => 10,
+                            CURLOPT_TIMEOUT        => 0,
+                            CURLOPT_FOLLOWLOCATION => true,
+                            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                            CURLOPT_CUSTOMREQUEST  => 'POST',
+                        )
+                    );
 
-                curl_setopt_array(
-                    $curl,
-                    array(
-                        CURLOPT_URL            => $curl_url,
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_ENCODING       => '',
-                        CURLOPT_MAXREDIRS      => 10,
-                        CURLOPT_TIMEOUT        => 0,
-                        CURLOPT_FOLLOWLOCATION => true,
-                        CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                        CURLOPT_CUSTOMREQUEST  => 'POST',
-                    )
-                );
+                    $response = curl_exec( $curl );
 
-                $response = curl_exec( $curl );
-
-                curl_close( $curl );
-                echo $response;
+                    curl_close( $curl );
+                    echo $response;
+                }
             }
 
         } else {
@@ -323,6 +325,7 @@ function send_subscription_information_to_api( $order_id ) {
 
 }
 
+// Add plane to api
 add_action( 'woocommerce_checkout_order_processed', 'send_plane_information_to_api', 10, 1 );
 add_shortcode( 'send_plane_to_api', 'send_plane_information_to_api' );
 function send_plane_information_to_api( $order_id ) {
