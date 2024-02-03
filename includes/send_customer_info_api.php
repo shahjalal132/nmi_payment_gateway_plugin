@@ -162,7 +162,7 @@ function send_subscription_information_to_api( $order_id ) {
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
-        $order_id = 2736;
+        // $order_id = 2736;
 
         // Get the order object
         $order = wc_get_order( $order_id );
@@ -212,8 +212,8 @@ function send_subscription_information_to_api( $order_id ) {
                     $last_4_digits = $meta_data->value->last4;
                     $card_brand    = $meta_data->value->brand;
 
-                    $cc_number    = 4111111111111111;
-                    $currency     = $wc_data['currency'];
+                    $cc_number = 4111111111111111;
+                    $currency  = $wc_data['currency'];
                     // $payment_type = $wc_data['payment_method_title'];
                     $payment_type = 'creditcard';
 
@@ -324,7 +324,10 @@ function send_subscription_information_to_api( $order_id ) {
 }
 
 add_action( 'woocommerce_checkout_order_processed', 'send_plane_information_to_api', 10, 1 );
+add_shortcode( 'send_plane_to_api', 'send_plane_information_to_api' );
 function send_plane_information_to_api( $order_id ) {
+
+    // $order_id = 2736;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
