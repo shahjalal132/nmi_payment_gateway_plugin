@@ -2,7 +2,11 @@
 
 //add customer information to api
 add_action( 'woocommerce_checkout_order_processed', 'send_customer_information_to_api', 10, 1 );
+add_shortcode( 'send_customer_to_api', 'send_customer_information_to_api' );
 function send_customer_information_to_api( $order_id ) {
+
+    // static order id
+    $order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
@@ -18,12 +22,6 @@ function send_customer_information_to_api( $order_id ) {
 
             // Get customer data
             $customer_data = get_userdata( $customer_id );
-
-            $payment_method      = null;
-            $subscription_period = null;
-            $product_type        = null;
-            $billing_interval    = null;
-            $plane_amount        = null;
 
             foreach ( $order->get_items() as $item_id => $item ) {
                 // get the product id
@@ -47,22 +45,34 @@ function send_customer_information_to_api( $order_id ) {
                     $s_year  = 'year';
                     $s_month = 'month';
 
+                    // get card data
+                    $meta_data = $wc_data['meta_data'][3];
+
+                    // get ccexp and last4 and card_brand
+                    $cc_exp        = $meta_data->value->ccexp;
+                    $last_4_digits = $meta_data->value->last4;
+                    $card_brand    = $meta_data->value->brand;
+
+                    $currency = $wc_data['currency'] ?? null;
+                    // $payment_type = $wc_data['payment_method_title'];
+                    $payment_type      = $payment_type ?? 'creditcard';
+                    $day_of_month      = $day_of_month ?? 15;
+                    $order_description = $order_description ?? '';
+
                     $billing_interval    = $wc_data['billing_interval'];
                     $billing_period      = $wc_data['billing_period'];
                     $payment_method      = $wc_data['payment_method'];
                     $plane_amount        = $wc_data['total'];
                     $subscription_period = $billing_interval . ' ' . $billing_period;
 
-                    $cc_number    = 4111111111111111;
-                    $cc_exp       = '10/25';
-                    $currency     = 'USD';
-                    $payment_type = 'creditcard';
-
                     if ( strpos( $subscription_period, $s_year ) ) {
                         $subscription_period = str_replace( $s_year, 'Years', $subscription_period );
                     } else if ( strpos( $subscription_period, $s_month ) ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
+
+                    $cc_number    = 4111111111111111; // replace dynamic credit card number
+                    $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
 
                 }
 
@@ -90,10 +100,8 @@ function send_customer_information_to_api( $order_id ) {
                 $shipping_state      = $order->get_shipping_state();
                 $shipping_postcode   = $order->get_shipping_postcode();
                 $shipping_country    = $order->get_shipping_country();
-
-                // get security key
-                $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc';
-
+                
+                
                 $curl     = curl_init();
                 $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                     . '?customer_vault=add_customer'
