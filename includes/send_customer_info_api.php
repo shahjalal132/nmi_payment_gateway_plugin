@@ -100,8 +100,8 @@ function send_customer_information_to_api( $order_id ) {
                 $shipping_state      = $order->get_shipping_state();
                 $shipping_postcode   = $order->get_shipping_postcode();
                 $shipping_country    = $order->get_shipping_country();
-                
-                
+
+
                 $curl     = curl_init();
                 $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                     . '?customer_vault=add_customer'
@@ -169,7 +169,7 @@ add_shortcode( 'send_subscription_to_api', 'send_subscription_information_to_api
 function send_subscription_information_to_api( $order_id ) {
 
     // static order id
-    // $order_id = 2767;
+    $order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
@@ -237,7 +237,10 @@ function send_subscription_information_to_api( $order_id ) {
                     }
 
                     $cc_number    = 4111111111111111; // replace dynamic credit card number
-                    $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
+
+                    $nmi_settings = get_option( 'woocommerce_nmi_settings' );
+                    $security_key = $nmi_settings['private_key'];
+                    $public_key   = $nmi_settings['public_key'];
 
                 }
 
@@ -266,6 +269,7 @@ function send_subscription_information_to_api( $order_id ) {
                 $shipping_postcode   = $order->get_shipping_postcode();
                 $shipping_country    = $order->get_shipping_country();
 
+                // die();
                 // Add a subscription conditionally
                 if ( 'nmi' == $payment_method && ( 'simple-subscription' == $product_type || 'variable-subscription' == $product_type ) ) {
                     $curl     = curl_init();
