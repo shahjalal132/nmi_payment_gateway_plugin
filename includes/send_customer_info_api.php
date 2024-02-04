@@ -1,7 +1,20 @@
 <?php
 
+add_action( 'woocommerce_checkout_order_processed', 'process_order_actions', 10, 1 );
+function process_order_actions( $order_id ) {
+    // Action 1: Send plane information to API
+    send_plane_information_to_api( $order_id );
+
+    // Action 2: Send subscription information to API
+    send_subscription_information_to_api( $order_id );
+
+    // Action 3: Send customer information to API
+    send_customer_information_to_api( $order_id );
+}
+
+
 //add customer information to api
-add_action( 'woocommerce_checkout_order_processed', 'send_customer_information_to_api', 10, 1 );
+// add_action( 'woocommerce_checkout_order_processed', 'send_customer_information_to_api', 10, 1 );
 add_shortcode( 'send_customer_to_api', 'send_customer_information_to_api' );
 function send_customer_information_to_api( $order_id ) {
 
@@ -164,7 +177,7 @@ function send_customer_information_to_api( $order_id ) {
 }
 
 
-add_action( 'woocommerce_checkout_order_processed', 'send_subscription_information_to_api', 10, 1 );
+// add_action( 'woocommerce_checkout_order_processed', 'send_subscription_information_to_api', 10, 1 );
 add_shortcode( 'send_subscription_to_api', 'send_subscription_information_to_api' );
 function send_subscription_information_to_api( $order_id ) {
 
@@ -338,7 +351,7 @@ function send_subscription_information_to_api( $order_id ) {
 }
 
 // Add plane to api
-add_action( 'woocommerce_checkout_order_processed', 'send_plane_information_to_api', 10, 1 );
+// add_action( 'woocommerce_checkout_order_processed', 'send_plane_information_to_api', 10, 1 );
 add_shortcode( 'send_plane_to_api', 'send_plane_information_to_api' );
 function send_plane_information_to_api( $order_id ) {
 
