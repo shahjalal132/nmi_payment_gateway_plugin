@@ -538,12 +538,6 @@ function add_customer_to_api( $order_id ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
 
-                    $cc_number = 4111111111111111; // replace dynamic credit card number
-
-                    $nmi_settings          = get_option( 'woocommerce_nmi_settings' );
-                    $security_key          = $nmi_settings['private_key'];
-                    $GLOBALS['public_key'] = $nmi_settings['public_key'];
-
                 }
 
                 // get billing information
@@ -571,6 +565,12 @@ function add_customer_to_api( $order_id ) {
                 $shipping_postcode   = $order->get_shipping_postcode();
                 $shipping_country    = $order->get_shipping_country();
 
+                // get nmi settings
+                $nmi_settings          = get_option( 'woocommerce_nmi_settings' );
+                $security_key          = $nmi_settings['private_key'];
+                $GLOBALS['public_key'] = $nmi_settings['public_key'];
+
+                $cc_number = 4111111111111111; // replace dynamic credit card number
 
                 // Add a customer
                 $curl     = curl_init();
@@ -623,6 +623,7 @@ function add_customer_to_api( $order_id ) {
                 $response = curl_exec( $curl );
 
                 curl_close( $curl );
+                // end add customer
 
             }
 
@@ -658,26 +659,27 @@ function add_customer_to_api( $order_id ) {
 
                 curl_close( $curl );
             }
+            // end add a plane
 
             // Add a subscription conditionally
             if ( 'nmi' == $payment_method && ( 'simple-subscription' == $product_type || 'variable-subscription' == $product_type ) ) {
                 $curl     = curl_init();
-                $curl_url = 'https://secure.nmi.com/api/transact.php'
-                    . '?recurring=add_subscription'
-                    . '&plan_payments=0'
-                    . '&plan_amount=' . urlencode( $plane_amount )
+                $curl_url = 'https://secure.nmi.com/api/transact.php?recurring=add_subscription'
+                    . '&plan_id=2815'
                     . '&security_key=' . urlencode( $security_key )
-                    . '&ccnumber=' . urlencode( string: $cc_number )
-                    . '&ccexp=' . urlencode( $cc_exp )
-                    . '&payment=' . urlencode( $payment_type )
+                    . '&ccnumber=' . urlencode( $cc_number )
+                    . '&ccexp=10%2F25'
+                    . '&payment=creditcard'
                     . '&checkname=' . urlencode( $first_name )
+                    . '&checkaccount=24413815'
+                    . '&checkaba=490000018'
                     . '&account_type=savings'
                     . '&currency=' . urlencode( $currency )
                     . '&account_holder_type=personal'
                     . '&sec_code=PPD'
                     . '&first_name=' . urlencode( $first_name )
                     . '&last_name=' . urlencode( $last_name )
-                    . '&address1=' . urlencode( $billing_address_1 )
+                    . '&address1=' . urlencode( $last_name )
                     . '&city=' . urlencode( $billing_city )
                     . '&state=' . urlencode( $billing_state )
                     . '&zip=' . urlencode( $billing_postcode )
@@ -686,13 +688,13 @@ function add_customer_to_api( $order_id ) {
                     . '&email=' . urlencode( $customer_email )
                     . '&company=' . urlencode( $billing_company )
                     . '&address2=' . urlencode( $billing_address_2 )
+                    . '&fax=123'
                     . '&orderid=' . urlencode( $order_id )
-                    . '&order_description=' . urlencode( $order_description )
-                    . '&day_of_month=' . urlencode( $day_of_month )
+                    . '&order_description=Order%20Description'
+                    . '&ponumber=' . urlencode( $customer_phone )
                     . '&customer_receipt=true'
-                    . '&paused_subscription=true'
-                    . '&acu_enabled=true'
-                    . '&month_frequency=' . urlencode( $billing_interval );
+                    . '&acu_enabled=true';
+
 
                 curl_setopt_array(
                     $curl,
@@ -712,6 +714,8 @@ function add_customer_to_api( $order_id ) {
 
                 curl_close( $curl );
             }
+
+            // end add subscription
 
         } else {
             echo 'Order not found.';
