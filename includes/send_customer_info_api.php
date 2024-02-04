@@ -71,8 +71,8 @@ function send_customer_information_to_api( $order_id ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
 
-                    $cc_number    = 4111111111111111; // replace dynamic credit card number
-                    $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
+                    $cc_number = 4111111111111111; // replace dynamic credit card number
+                    // $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
 
                 }
 
@@ -105,7 +105,7 @@ function send_customer_information_to_api( $order_id ) {
                 $curl     = curl_init();
                 $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                     . '?customer_vault=add_customer'
-                    . '&security_key=' . urlencode( string: $security_key )
+                    . '&security_key=' . urlencode( string: $GLOBALS['security_key'] )
                     . '&ccnumber=' . urlencode( $cc_number )
                     . '&ccexp=' . urlencode( $cc_exp )
                     . '&currency=' . urlencode( $currency )
@@ -169,7 +169,7 @@ add_shortcode( 'send_subscription_to_api', 'send_subscription_information_to_api
 function send_subscription_information_to_api( $order_id ) {
 
     // static order id
-    $order_id = 2767;
+    // $order_id = 2767;
 
     // Make sure WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
@@ -236,11 +236,11 @@ function send_subscription_information_to_api( $order_id ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
 
-                    $cc_number    = 4111111111111111; // replace dynamic credit card number
+                    $cc_number = 4111111111111111; // replace dynamic credit card number
 
-                    $nmi_settings = get_option( 'woocommerce_nmi_settings' );
-                    $security_key = $nmi_settings['private_key'];
-                    $public_key   = $nmi_settings['public_key'];
+                    $nmi_settings            = get_option( 'woocommerce_nmi_settings' );
+                    $GLOBALS['security_key'] = $nmi_settings['private_key'];
+                    $GLOBALS['public_key']   = $nmi_settings['public_key'];
 
                 }
 
@@ -277,7 +277,7 @@ function send_subscription_information_to_api( $order_id ) {
                         . '?recurring=add_subscription'
                         . '&plan_payments=0'
                         . '&plan_amount=' . urlencode( $plane_amount )
-                        . '&security_key=' . urlencode( $security_key )
+                        . '&security_key=' . urlencode( $GLOBALS['security_key'] )
                         . '&ccnumber=' . urlencode( string: $cc_number )
                         . '&ccexp=' . urlencode( $cc_exp )
                         . '&payment=' . urlencode( $payment_type )
@@ -366,10 +366,10 @@ function send_plane_information_to_api( $order_id ) {
             $billing_interval    = null;
             $plane_amount        = null;
             $payment_type        = null;
-            $day_of_month        = 15;
+            $day_of_month        = 15; // replace with dynamic value
 
-            $cc_number    = 4111111111111111; // replace dynamic credit card number
-            $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
+            $cc_number = 4111111111111111; // replace dynamic credit card number
+            // $security_key = 'H24zBu3uC7rn3JR7uY86NqhQH6TZCzkc'; // replace dynamic security key
 
             foreach ( $order->get_items() as $item_id => $item ) {
 
@@ -421,7 +421,7 @@ function send_plane_information_to_api( $order_id ) {
 
                     $curl     = curl_init();
                     $curl_url = 'https://secure.nmi.com/api/transact.php'
-                        . '?security_key=' . urlencode( $security_key )
+                        . '?security_key=' . urlencode( $GLOBALS['security_key'] )
                         . '&recurring=add_plan'
                         . '&plan_payments=0'
                         . '&plan_amount=' . urlencode( $plane_amount )
