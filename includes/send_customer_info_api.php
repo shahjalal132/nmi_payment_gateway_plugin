@@ -96,11 +96,16 @@ function add_customer_to_api( $order_id ) {
                 $shipping_country    = $order->get_shipping_country();
 
                 // get nmi settings
-                $nmi_settings          = get_option( 'woocommerce_nmi_settings' );
-                $security_key          = $nmi_settings['private_key'];
-                $GLOBALS['public_key'] = $nmi_settings['public_key'];
+                $nmi_settings = get_option( 'woocommerce_nmi_settings' );
+                $security_key = $nmi_settings['private_key'];
+                $public_key   = $nmi_settings['public_key'];
 
-                $cc_number = 4111111111111111; // replace dynamic credit card number
+                // define card number
+                $cc_number = null;
+
+                if ( isset( $_POST['ccnumber'] ) ) {
+                    $cc_number = sanitize_text_field( $_POST['ccnumber'] );
+                }
 
                 // Add a customer
                 $curl     = curl_init();
