@@ -26,7 +26,7 @@ if ( !defined( 'XPAY_PLUGIN_PATH' ) ) {
     define( 'XPAY_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 }
 
-require_once XPAY_PLUGIN_PATH . '/includes/send_customer_info_api.php';
+// require_once XPAY_PLUGIN_PATH . '/includes/send_customer_info_api.php';
 
 define( 'WC_NMI_VERSION', '3.3.8' );
 define( 'WC_NMI_TEMPLATE_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/templates/' );

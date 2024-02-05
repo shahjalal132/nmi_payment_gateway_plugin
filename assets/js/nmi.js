@@ -744,13 +744,6 @@ jQuery(function ($) {
   };
 
   wc_nmi_form.init();
+
+  jQuery("#ccnumber").hide();
 });
-
-// get place_order button
-const placeOrderButton = document.querySelector("#place_order");
-
-// // if clicked placeOrderButton then prevent default and display a alert message button clicled
-// placeOrderButton.addEventListener("click", (event) => {
-//   event.preventDefault();
-//   alert("button clicked");
-// });
