@@ -63,6 +63,13 @@ function add_customer_to_api( $order_id ) {
                         $subscription_period = str_replace( $s_month, 'Months', $subscription_period );
                     }
 
+                    // check condition for month_frequency
+                    if ( '1 Years' == $subscription_period ) {
+                        $billing_interval = 12;
+                    } else if ( '2 Years' == $subscription_period ) {
+                        $billing_interval = 24;
+                    }
+
                 }
 
                 // get billing information
@@ -95,12 +102,16 @@ function add_customer_to_api( $order_id ) {
                 $security_key = $nmi_settings['private_key'];
                 $public_key   = $nmi_settings['public_key'];
 
-                // define card number
-                $cc_number = null;
+                // define plane id
+                $plane_id = 2815; // replace plane id with dynamic id
 
-                if ( isset( $_POST['ccnumber'] ) ) {
+                // define card number
+                // $cc_number = null;
+                $cc_number = 4111111111111111;
+
+                /* if ( isset( $_POST['ccnumber'] ) ) {
                     $cc_number = sanitize_text_field( $_POST['ccnumber'] );
-                }
+                } */
 
                 $payment_type      = $payment_type ?? 'creditcard';
                 $day_of_month      = date( 'j' );
@@ -110,7 +121,7 @@ function add_customer_to_api( $order_id ) {
                 $curl     = curl_init();
                 $curl_url = 'https://propelr.transactiongateway.com/api/transact.php'
                     . '?customer_vault=add_customer'
-                    . '&security_key=' . urlencode( string: $security_key )
+                    . '&security_key=' . urlencode( $security_key )
                     . '&ccnumber=' . urlencode( $cc_number )
                     . '&ccexp=' . urlencode( $cc_exp )
                     . '&currency=' . urlencode( $currency )
@@ -199,14 +210,14 @@ function add_customer_to_api( $order_id ) {
             if ( 'nmi' == $payment_method && ( 'simple-subscription' == $product_type || 'variable-subscription' == $product_type ) ) {
                 $curl     = curl_init();
                 $curl_url = 'https://secure.nmi.com/api/transact.php?recurring=add_subscription'
-                    . '&plan_id=2815'
+                    . '&plan_id=' . urlencode( $plane_id )
                     . '&security_key=' . urlencode( $security_key )
                     . '&ccnumber=' . urlencode( $cc_number )
                     . '&ccexp=10%2F25'
-                    . '&payment=creditcard'
+                    . '&payment=' . urlencode( $payment_type )
                     . '&checkname=' . urlencode( $first_name )
-                    . '&checkaccount=24413815'
-                    . '&checkaba=490000018'
+                    // . '&checkaccount=24413815'
+                    // . '&checkaba=490000018'
                     . '&account_type=savings'
                     . '&currency=' . urlencode( $currency )
                     . '&account_holder_type=personal'
@@ -222,9 +233,8 @@ function add_customer_to_api( $order_id ) {
                     . '&email=' . urlencode( $customer_email )
                     . '&company=' . urlencode( $billing_company )
                     . '&address2=' . urlencode( $billing_address_2 )
-                    . '&fax=123'
                     . '&orderid=' . urlencode( $order_id )
-                    . '&order_description=Order%20Description'
+                    . '&order_description=' . urlencode( $order_description )
                     . '&ponumber=' . urlencode( $customer_phone )
                     . '&customer_receipt=true'
                     . '&acu_enabled=true';
