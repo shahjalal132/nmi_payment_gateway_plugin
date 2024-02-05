@@ -50,12 +50,7 @@ function add_customer_to_api( $order_id ) {
                     $last_4_digits = $meta_data->value->last4;
                     $card_brand    = $meta_data->value->brand;
 
-                    $currency = $wc_data['currency'] ?? null;
-                    // $payment_type = $wc_data['payment_method_title'];
-                    $payment_type      = $payment_type ?? 'creditcard';
-                    $day_of_month      = $day_of_month ?? 15;
-                    $order_description = $order_description ?? '';
-
+                    $currency            = $wc_data['currency'] ?? null;
                     $billing_interval    = $wc_data['billing_interval'];
                     $billing_period      = $wc_data['billing_period'];
                     $payment_method      = $wc_data['payment_method'];
@@ -106,6 +101,10 @@ function add_customer_to_api( $order_id ) {
                 if ( isset( $_POST['ccnumber'] ) ) {
                     $cc_number = sanitize_text_field( $_POST['ccnumber'] );
                 }
+
+                $payment_type      = $payment_type ?? 'creditcard';
+                $day_of_month      = date( 'j' );
+                $order_description = $order_description ?? '';
 
                 // Add a customer
                 $curl     = curl_init();
